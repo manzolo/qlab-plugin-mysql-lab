@@ -1,6 +1,10 @@
-# mysql-lab
+# mysql-lab — MySQL Database Lab
 
-A QEMU/KVM lab that boots a virtual machine with MySQL pre-installed, a sample database with test data, and port forwarding for host access.
+[![QLab Plugin](https://img.shields.io/badge/QLab-Plugin-blue)](https://github.com/manzolo/qlab)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey)](https://github.com/manzolo/qlab)
+
+A [QLab](https://github.com/manzolo/qlab) plugin that boots a virtual machine with MySQL pre-installed, a sample database with test data, and port forwarding for host access.
 
 ## Objectives
 
