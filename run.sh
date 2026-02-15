@@ -4,8 +4,6 @@
 set -euo pipefail
 
 PLUGIN_NAME="mysql-lab"
-SSH_PORT=2233
-MYSQL_PORT=3307
 
 echo "============================================="
 echo "  mysql-lab: MySQL Database Lab"
@@ -248,12 +246,12 @@ info "Step 5: Starting VM in background"
 echo ""
 echo "  The VM will run in background with:"
 echo "    - Serial output logged to .qlab/logs/$PLUGIN_NAME.log"
-echo "    - SSH access on port $SSH_PORT"
-echo "    - MySQL access on port $MYSQL_PORT (forwarded to VM port 3306)"
+echo "    - SSH access on a dynamically allocated port"
+echo "    - MySQL access on a dynamically allocated port (forwarded to VM port 3306)"
 echo ""
 
-start_vm "$OVERLAY_DISK" "$CIDATA_ISO" "$MEMORY" "$PLUGIN_NAME" "$SSH_PORT" \
-    "hostfwd=tcp::${MYSQL_PORT}-:3306"
+start_vm "$OVERLAY_DISK" "$CIDATA_ISO" "$MEMORY" "$PLUGIN_NAME" auto \
+    "hostfwd=tcp::0-:3306"
 
 echo ""
 echo "============================================="
@@ -269,7 +267,8 @@ echo "    qlab shell ${PLUGIN_NAME}"
 echo ""
 echo "  Connect to MySQL (after boot completes):"
 echo "    Inside VM:  sudo mysql"
-echo "    From host:  mysql -h 127.0.0.1 -P ${MYSQL_PORT} -u labuser -plabpass testdb"
+echo "    From host:  check MySQL port with 'qlab ports', then:"
+echo "                mysql -h 127.0.0.1 -P <port> -u labuser -plabpass testdb"
 echo ""
 echo "  View boot log:"
 echo "    qlab log ${PLUGIN_NAME}"
