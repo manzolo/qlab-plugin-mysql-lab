@@ -253,6 +253,12 @@ echo ""
 start_vm "$OVERLAY_DISK" "$CIDATA_ISO" "$MEMORY" "$PLUGIN_NAME" auto \
     "hostfwd=tcp::0-:3306"
 
+# Read the dynamically allocated MySQL port from .ports file
+MYSQL_PORT=""
+if [[ -f "$STATE_DIR/${PLUGIN_NAME}.ports" ]]; then
+    MYSQL_PORT=$(grep ':3306$' "$STATE_DIR/${PLUGIN_NAME}.ports" | head -1 | cut -d: -f2)
+fi
+
 echo ""
 echo "============================================="
 echo "  mysql-lab: VM is booting"
@@ -267,8 +273,12 @@ echo "    qlab shell ${PLUGIN_NAME}"
 echo ""
 echo "  Connect to MySQL (after boot completes):"
 echo "    Inside VM:  sudo mysql"
+if [[ -n "$MYSQL_PORT" ]]; then
+echo "    From host:  mysql -h 127.0.0.1 -P ${MYSQL_PORT} -u labuser -plabpass testdb"
+else
 echo "    From host:  check MySQL port with 'qlab ports', then:"
 echo "                mysql -h 127.0.0.1 -P <port> -u labuser -plabpass testdb"
+fi
 echo ""
 echo "  View boot log:"
 echo "    qlab log ${PLUGIN_NAME}"
