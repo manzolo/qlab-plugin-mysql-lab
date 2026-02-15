@@ -33,8 +33,10 @@ A [QLab](https://github.com/manzolo/qlab) plugin that boots a virtual machine wi
 
 | Service | Host Port | VM Port |
 |---------|-----------|---------|
-| SSH     | 2233      | 22      |
-| MySQL   | 3307      | 3306    |
+| SSH     | dynamic   | 22      |
+| MySQL   | dynamic   | 3306    |
+
+> All host ports are dynamically allocated. Use `qlab ports` to see the actual mappings.
 
 ## Usage
 
@@ -55,8 +57,8 @@ sudo mysql                                 # connect as root
 mysql -u labuser -plabpass testdb          # connect as labuser
 SELECT * FROM users;                       # query sample data
 
-# From the host (if mysql-client is installed):
-mysql -h 127.0.0.1 -P 3307 -u labuser -plabpass testdb
+# From the host (check MySQL port with 'qlab ports'):
+mysql -h 127.0.0.1 -P <mysql_port> -u labuser -plabpass testdb
 
 # Stop the VM
 qlab stop mysql-lab
