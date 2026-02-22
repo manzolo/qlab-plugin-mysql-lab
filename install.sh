@@ -15,6 +15,7 @@ echo "    - How to create databases, tables, and insert data"
 echo "    - How to manage users and permissions"
 echo "    - How to perform backups and restores with mysqldump"
 echo "    - How to access MySQL from the host via port forwarding"
+echo "    - How to use phpMyAdmin for web-based database management"
 echo ""
 
 # Create lab working directory

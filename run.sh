@@ -14,6 +14,7 @@ echo "    1. Provisioning MySQL via cloud-init"
 echo "    2. Creating databases, tables, and queries"
 echo "    3. Managing users and permissions"
 echo "    4. Performing backups and restores with mysqldump"
+echo "    5. Managing databases visually with phpMyAdmin"
 echo ""
 
 # Source QLab core libraries
@@ -70,9 +71,10 @@ info "Step 2: Cloud-init configuration"
 echo ""
 echo "  cloud-init will:"
 echo "    - Create a user 'labuser' with SSH access"
-echo "    - Install mysql-server and mysql-client packages"
+echo "    - Install mysql-server, mysql-client, and phpMyAdmin"
 echo "    - Create a sample database with test data"
 echo "    - Create a MySQL 'labuser' with privileges on the test DB"
+echo "    - Configure phpMyAdmin for web-based database management"
 echo ""
 
 cat > "$LAB_DIR/user-data" <<'USERDATA'
@@ -88,9 +90,22 @@ users:
     ssh_authorized_keys:
       - "__QLAB_SSH_PUB_KEY__"
 ssh_pwauth: true
+debconf_selections: |
+  phpmyadmin phpmyadmin/dbconfig-install boolean true
+  phpmyadmin phpmyadmin/mysql/admin-pass password
+  phpmyadmin phpmyadmin/mysql/app-pass password labpass
+  phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2
 packages:
   - mysql-server
   - mysql-client
+  - apache2
+  - php
+  - php-mysql
+  - php-mbstring
+  - php-zip
+  - php-gd
+  - php-curl
+  - phpmyadmin
   - curl
 write_files:
   - path: /etc/profile.d/cloud-init-status.sh
@@ -120,6 +135,7 @@ write_files:
           • create databases, tables, and run queries
           • manage users and permissions
           • perform backups and restores
+          • use phpMyAdmin for visual database management
 
         \033[1;33mMySQL Commands:\033[0m
           \033[0;32msudo mysql\033[0m                        connect as root
@@ -134,6 +150,10 @@ write_files:
         \033[1;33mBackup & Restore:\033[0m
           \033[0;32msudo mysqldump testdb > backup.sql\033[0m
           \033[0;32msudo mysql testdb < backup.sql\033[0m
+
+        \033[1;33mphpMyAdmin:\033[0m
+          \033[0;32mhttp://localhost/phpmyadmin\033[0m       (inside VM)
+          Run \033[0;32mqlab ports\033[0m on the host to see the HTTP port
 
         \033[1;33mFrom the host:\033[0m
           \033[0;32mmysql -h 127.0.0.1 -P 3307 -u labuser -plabpass testdb\033[0m
@@ -187,6 +207,11 @@ runcmd:
   - mysql -u root -e "GRANT ALL PRIVILEGES ON testdb.* TO 'labuser'@'%';"
   - mysql -u root -e "FLUSH PRIVILEGES;"
   - mysql -u root testdb < /home/labuser/sample_data.sql
+  - mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'labuser'@'localhost' WITH GRANT OPTION;"
+  - mysql -u root -e "FLUSH PRIVILEGES;"
+  - ln -sf /usr/share/phpmyadmin /var/www/html/phpmyadmin
+  - phpenmod mbstring
+  - systemctl restart apache2
   - chown -R labuser:labuser /home/labuser
   - echo "=== mysql-lab VM is ready! ==="
 USERDATA
@@ -238,7 +263,7 @@ if [[ -f "$OVERLAY_DISK" ]]; then
     info "Removing previous overlay disk..."
     rm -f "$OVERLAY_DISK"
 fi
-create_overlay "$CLOUD_IMAGE_FILE" "$OVERLAY_DISK" "${QLAB_DISK_SIZE:-}" || {
+create_overlay "$CLOUD_IMAGE_FILE" "$OVERLAY_DISK" "${QLAB_DISK_SIZE:-6G}" || {
     error "Failed to create overlay disk."
     exit 1
 }
@@ -251,15 +276,19 @@ echo "  The VM will run in background with:"
 echo "    - Serial output logged to .qlab/logs/$PLUGIN_NAME.log"
 echo "    - SSH access on a dynamically allocated port"
 echo "    - MySQL access on a dynamically allocated port (forwarded to VM port 3306)"
+echo "    - phpMyAdmin (HTTP) on a dynamically allocated port (forwarded to VM port 80)"
 echo ""
 
 start_vm "$OVERLAY_DISK" "$CIDATA_ISO" "$MEMORY" "$PLUGIN_NAME" auto \
-    "hostfwd=tcp::0-:3306"
+    "hostfwd=tcp::0-:3306" \
+    "hostfwd=tcp::0-:80"
 
-# Read the dynamically allocated MySQL port from .ports file
+# Read the dynamically allocated ports from .ports file
 MYSQL_PORT=""
+PMA_PORT=""
 if [[ -f "$STATE_DIR/${PLUGIN_NAME}.ports" ]]; then
     MYSQL_PORT=$(grep ':3306$' "$STATE_DIR/${PLUGIN_NAME}.ports" | head -1 | cut -d: -f2)
+    PMA_PORT=$(grep ':80$' "$STATE_DIR/${PLUGIN_NAME}.ports" | head -1 | cut -d: -f2)
 fi
 
 echo ""
@@ -282,6 +311,15 @@ else
 echo "    From host:  check MySQL port with 'qlab ports', then:"
 echo "                mysql -h 127.0.0.1 -P <port> -u labuser -plabpass testdb"
 fi
+echo ""
+echo "  phpMyAdmin (after boot completes):"
+if [[ -n "$PMA_PORT" ]]; then
+echo "    http://localhost:${PMA_PORT}/phpmyadmin"
+else
+echo "    Check HTTP port with 'qlab ports', then:"
+echo "    http://localhost:<port>/phpmyadmin"
+fi
+echo "    Login: labuser / labpass"
 echo ""
 echo "  View boot log:"
 echo "    qlab log ${PLUGIN_NAME}"
