@@ -151,12 +151,14 @@ write_files:
           \033[0;32msudo mysqldump testdb > backup.sql\033[0m
           \033[0;32msudo mysql testdb < backup.sql\033[0m
 
-        \033[1;33mphpMyAdmin:\033[0m
-          \033[0;32mhttp://localhost/phpmyadmin\033[0m       (inside VM)
-          Run \033[0;32mqlab ports\033[0m on the host to see the HTTP port
+        \033[1;33mphpMyAdmin (web interface):\033[0m
+          Inside VM:  \033[0;32mhttp://localhost/phpmyadmin\033[0m
+          From host:  \033[0;32mhttp://localhost:<HTTP_PORT>/phpmyadmin\033[0m
+          Login:      \033[1;36mlabuser\033[0m / \033[1;36mlabpass\033[0m
 
-        \033[1;33mFrom the host:\033[0m
-          \033[0;32mmysql -h 127.0.0.1 -P 3307 -u labuser -plabpass testdb\033[0m
+        \033[1;33mFrom the host:\033[0m  run \033[0;32mqlab ports\033[0m to see port numbers
+          MySQL:      \033[0;32mmysql -h 127.0.0.1 -P <MYSQL_PORT> -u labuser -plabpass testdb\033[0m
+          phpMyAdmin: \033[0;32mhttp://localhost:<HTTP_PORT>/phpmyadmin\033[0m
 
         \033[1;33mCredentials:\033[0m  \033[1;36mlabuser\033[0m / \033[1;36mlabpass\033[0m
         \033[1;33mExit:\033[0m         type '\033[1;31mexit\033[0m'
@@ -296,37 +298,32 @@ echo "============================================="
 echo "  mysql-lab: VM is booting"
 echo "============================================="
 echo ""
-echo "  Credentials:"
-echo "    Username: labuser"
-echo "    Password: labpass"
+echo "  Credentials: labuser / labpass"
 echo ""
-echo "  Connect via SSH (wait ~60s for boot + package install):"
+echo "  SSH (wait ~60s for boot + package install):"
 echo "    qlab shell ${PLUGIN_NAME}"
 echo ""
-echo "  Connect to MySQL (after boot completes):"
+echo "  MySQL (after boot completes):"
 echo "    Inside VM:  sudo mysql"
 if [[ -n "$MYSQL_PORT" ]]; then
 echo "    From host:  mysql -h 127.0.0.1 -P ${MYSQL_PORT} -u labuser -plabpass testdb"
 else
-echo "    From host:  check MySQL port with 'qlab ports', then:"
-echo "                mysql -h 127.0.0.1 -P <port> -u labuser -plabpass testdb"
+echo "    From host:  mysql -h 127.0.0.1 -P <port> -u labuser -plabpass testdb"
 fi
 echo ""
-echo "  phpMyAdmin (after boot completes):"
+echo "  ---------------------------------------------"
+echo "  phpMyAdmin (web interface):"
 if [[ -n "$PMA_PORT" ]]; then
-echo "    http://localhost:${PMA_PORT}/phpmyadmin"
+echo "    URL:   http://localhost:${PMA_PORT}/phpmyadmin"
 else
-echo "    Check HTTP port with 'qlab ports', then:"
-echo "    http://localhost:<port>/phpmyadmin"
+echo "    URL:   http://localhost:<port>/phpmyadmin"
 fi
 echo "    Login: labuser / labpass"
+echo "  ---------------------------------------------"
 echo ""
-echo "  View boot log:"
-echo "    qlab log ${PLUGIN_NAME}"
+echo "  Active ports:  qlab ports"
+echo "  View boot log: qlab log ${PLUGIN_NAME}"
+echo "  Stop VM:       qlab stop ${PLUGIN_NAME}"
 echo ""
-echo "  Stop VM:"
-echo "    qlab stop ${PLUGIN_NAME}"
-echo ""
-echo "  Tip: override resources with environment variables:"
-echo "    QLAB_MEMORY=4096 QLAB_DISK_SIZE=30G qlab run ${PLUGIN_NAME}"
+echo "  Tip: QLAB_MEMORY=4096 QLAB_DISK_SIZE=30G qlab run ${PLUGIN_NAME}"
 echo "============================================="
