@@ -297,13 +297,25 @@ exit
 
 ### 5.1 Create a new database
 
+Database creation is an administrative operation that requires root privileges:
+
 ```bash
-mysql -u labuser -plabpass
+sudo mysql
 ```
 
 ```sql
 CREATE DATABASE testlab;
-USE testlab;
+GRANT ALL ON testlab.* TO 'labuser'@'localhost';
+exit
+```
+
+Now connect as `labuser` to work with the new database:
+
+```bash
+mysql -u labuser -plabpass testlab
+```
+
+```sql
 CREATE TABLE students (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -345,7 +357,7 @@ mysql -u labuser -plabpass testlab < /tmp/testdb_backup.sql
 ### 5.6 Clean up
 
 ```bash
-mysql -u labuser -plabpass -e "DROP DATABASE testlab;"
+sudo mysql -e "DROP DATABASE testlab;"
 rm -f /tmp/testdb_backup.sql
 ```
 
