@@ -66,11 +66,27 @@ qlab stop mysql-lab
 
 ## Exercises
 
-1. **Explore the sample database**: Connect to MySQL and run `USE testdb; SHOW TABLES; SELECT * FROM users;`
-2. **Create a new database**: Run `CREATE DATABASE mydb;` and create tables with different column types
-3. **Manage users**: Create a new user with `CREATE USER`, grant specific privileges, and test access
-4. **JOIN queries**: Write queries that join the `users` and `orders` tables
-5. **Backup and restore**: Use `mysqldump testdb > backup.sql` to backup, drop a table, then restore with `mysql testdb < backup.sql`
+> **New to MySQL?** See the [Step-by-Step Guide](guide.md) for complete walkthroughs with full SQL examples.
+
+| # | Exercise | What you'll do |
+|---|----------|----------------|
+| 1 | **MySQL Anatomy** | Explore MySQL installation, connect, and navigate databases |
+| 2 | **SQL Queries** | Run SELECT, WHERE, ORDER BY, JOIN on sample data |
+| 3 | **Data Manipulation** | INSERT, UPDATE, DELETE rows and manage tables |
+| 4 | **Users and Privileges** | Create users, GRANT/REVOKE permissions |
+| 5 | **Database Administration** | Backup with mysqldump, restore, check status |
+| 6 | **Security and Configuration** | Review bind-address, authentication, and logging |
+
+## Automated Tests
+
+An automated test suite validates the exercises against a running VM:
+
+```bash
+# Start the lab first
+qlab run mysql-lab
+# Wait ~60s for cloud-init, then run all tests
+qlab test mysql-lab
+```
 
 ## Resetting
 
